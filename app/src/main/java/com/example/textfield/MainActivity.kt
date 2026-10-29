@@ -12,7 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.textfield.Screen.Contador
+import com.example.textfield.Screen.aforo
 import com.example.textfield.ui.theme.TextfieldTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TextfieldTheme {
-                Contador(Modifier.fillMaxSize())
+                aforo(Modifier.fillMaxSize())
 
             }
         }
@@ -30,6 +30,6 @@ class MainActivity : ComponentActivity() {
 
 @Preview
 @Composable
-fun Calculadorpreview(){
-    Contador(Modifier.fillMaxSize())
+fun aforopreviw(){
+    aforo(Modifier.fillMaxSize())
 }
