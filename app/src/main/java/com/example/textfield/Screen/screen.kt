@@ -4,6 +4,7 @@ import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
@@ -26,77 +29,59 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.textfield.Components.card
+import com.example.textfield.Components.Fuente
+import com.example.textfield.Components.Interlineado
+import com.example.textfield.Components.Sinter
+import com.example.textfield.Components.modoOscuro
+import com.example.textfield.Components.slider
 
 @Composable
-fun aforo(modifier : Modifier){
-    var actuales by rememberSaveable{mutableStateOf(0) }
-    var totales by remember{mutableStateOf(50)}
-    var visitas by rememberSaveable{mutableStateOf(0) }
-    val porcentaje = if (totales>0) (actuales*100) / totales else 0
-    val progreso = if (totales >0 ) actuales.toFloat() / totales.toFloat() else 0f
-    //
-    val indpro = when{
-        porcentaje < 70 -> Color.Green
-       porcentaje <100 -> Color.Yellow
-        else -> Color.Red
-
+fun lectura(modifier: Modifier= Modifier){
+    var tam by remember { mutableStateOf(18f)}
+    var interlineado by remember{ mutableStateOf(Interlineado.NORMAL)}
+    var oscuro by remember { mutableStateOf(false)}
+    var esSerif by remember { mutableStateOf(false)}
+    val fondoOscuro = if (oscuro) Color(0xFF121212) else Color.White
+    val textoOscuro = if (oscuro) Color.White else Color.Black
+Column(modifier = Modifier. fillMaxSize().verticalScroll(rememberScrollState()),
+    verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Box(Modifier
+        .fillMaxWidth()
+        .background(fondoOscuro)
+        .padding(16.dp))
+    {
+        Text(text="Cuando Gregorio Samsa despertó aquella mañana, luego de un sueño agitado, se encontró en su cama convertido en un insecto monstruoso." +
+                " Estaba echado sobre el quitinoso caparazón de su espalda, y al levantar un poco la cabeza," +
+                " vio la figura convexa de su vientre oscuro, surcado por curvadas durezas," +
+                " cuya prominencia apenas si podía aguantar la colcha," +
+                " visiblemente a punto de escurrirse hasta el suelo. Innumerables patas," +
+                " lamentablemente escuálidas en comparación con el grosor ordinario de sus piernas," +
+                " ofrecían a sus ojos el espectáculo de una agitación sin consistencia",
+            color = textoOscuro,
+            fontSize = tam.sp,
+            lineHeight = (tam * interlineado.factor).sp,
+            fontFamily = if (esSerif) FontFamily.Serif else FontFamily.SansSerif
+        )
     }
-    Column(Modifier.fillMaxSize().background(Color.Gray),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally) {
-
-            Text(
-                text = actuales.toString() + "/" + totales.toString(),
-                fontSize = 32.sp
-            )
-        Spacer(Modifier.height(16.dp))
-        Text( text = "$porcentaje % de ocupacion",
-            color = indpro)
-        Spacer(Modifier.height(16.dp))
-        LinearProgressIndicator(
-            progress = progreso,
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .height(16.dp)
-                .clip(RoundedCornerShape(50)),
-            color = indpro,
-            trackColor = Color.LightGray
+    slider(tam = tam, onTamChange = {tam = it})
+    Sinter(seleccionado = interlineado, onSeleccionar = {interlineado =it})
+    modoOscuro(Oscuro =  oscuro, onOscuroChange = {oscuro = it})
+    Fuente(esSerif= esSerif, onFuenteChange = {esSerif = it})
+    Button(
+        onClick = {
+            tam = 18f
+            interlineado = Interlineado.NORMAL
+            oscuro = false
+            esSerif = false
+        },
+        modifier=Modifier.fillMaxWidth()
+    ) {
+        Text("Restablecer")
+    }
+}
 
 
-        )
-        Spacer(Modifier.height(16.dp))
-        Row() {
-            Button(
-                onClick = { actuales++ ; visitas++ },
-                enabled = actuales < 50,
-                modifier = Modifier.padding(20.dp)
-
-            ) {
-                Text("+ ENTRA")
-            }
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = { actuales--},
-                enabled = actuales > 0,
-                modifier = Modifier.padding(20.dp),
-            ) {
-                Text("- SALE")
-            }
-
-        }
-        Spacer(Modifier.height(60.dp))
-        Text(
-            text = "Visitas del dia:"+visitas,
-            fontSize = 32.sp
-        )
-        Spacer(Modifier.height(60.dp))
-        Button(onClick = {actuales=0 ; visitas=0}) {
-            Text("Reinciar el dia")
-        }
-
-        }
 }
