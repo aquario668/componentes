@@ -1,5 +1,6 @@
 package com.example.textfield.Components
 
+import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,86 +30,25 @@ import androidx.compose.ui.unit.dp
 
 
 
-enum class Interlineado(val etiqueta: String , val factor: Float){
-    COMPACTO("Compacto", 1.0f),
-    NORMAL("Normal", 1.3f),
-    AMPLIO("Amplio", 1.6f)
-}
-@Composable
-fun slider(
-    tam: Float,
-    onTamChange: (Float)-> Unit,
-    modifier: Modifier = Modifier
-){
-    Column(modifier) {
-        Text("tamano de letra: ${tam.toInt()} sp")
-        Slider(
-            value = tam,
-            onValueChange = onTamChange,
-            valueRange = 14f..32f,
-            steps = 17
-        )
-    }
-}
-@Composable
-fun Sinter(
-    seleccionado: Interlineado,
-    onSeleccionar: (Interlineado) -> Unit,
-    modifier: Modifier = Modifier
-){
-    Column(modifier.selectableGroup()) {
-        Text("Interlineado")
-        Interlineado.entries.forEach{ opcion ->
-            Row(
-                Modifier.fillMaxWidth().selectable(
-                    selected = opcion ==seleccionado,
-                    onClick = {onSeleccionar(opcion)},
-                    role = Role.RadioButton
 
-                )
-                    .padding(vertical =16.dp),
-                 verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(selected = opcion ==seleccionado, onClick = null)
-                Spacer(Modifier.width(8.dp))
-                Text("${opcion.etiqueta} (${opcion.factor})")
-            }
-
+@Composable
+fun registroCorrecto(
+   nombre:String,
+   correo:String,
+   taller: String,
+   onNueva:()-> Unit
+){
+    Column(modifier = Modifier.padding(16.dp) ) {
+        Text("Inscripcion exitosa")
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Nombre :$nombre")
+        Text("correo:$correo")
+        Text("Taller:$taller")
+        Spacer(modifier=Modifier.height(16.dp))
+        Button(onClick = onNueva) {
+            Text("Nueva Inscripcion")
         }
+
     }
 
 }
-@Composable
-fun modoOscuro(
-    Oscuro: Boolean,
-    onOscuroChange: (Boolean) -> Unit,
-    modifier:Modifier = Modifier
-){
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        Text("Modo Oscuro", Modifier.weight(1f))
-        Switch(checked = Oscuro, onCheckedChange = onOscuroChange)
-
-    }
-}
-
-@Composable
-fun Fuente(
-    esSerif: Boolean,
-    onFuenteChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(
-            selected = esSerif,
-            onClick = { onFuenteChange(true) },
-            label = { Text("Serif") }
-        )
-        FilterChip(
-            selected = !esSerif,
-            onClick = { onFuenteChange(false) },
-            label = { Text("Sans") }
-        )
-    }
-}
-
-
