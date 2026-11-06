@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.IconButton
@@ -21,6 +23,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,52 +33,28 @@ import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.example.textfield.Screen.Tarea
 
 
 @Composable
-fun StepperPersonas(personas: Int, onChange: (Int) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = { if (personas > 1) onChange(personas - 1) }) {
-            Text("-", style = MaterialTheme.typography.titleLarge)
+fun TareaItem(tarea: Tarea, onCheckedChange: (Boolean) -> Unit, onDelete: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Checkbox(checked = tarea.hecha, onCheckedChange = onCheckedChange)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(tarea.titulo, color = if (tarea.hecha) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface)
+            Text(tarea.prioridad.name, style = MaterialTheme.typography.bodySmall)
         }
-        Text("$personas", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
-        IconButton(onClick = { if (personas < 20) onChange(personas + 1) }) {
-            Text("+", style = MaterialTheme.typography.titleLarge)
-        }
+        IconButton(onClick = onDelete) { Text("x") }
     }
 }
 
 @Composable
-fun ResultadoCuenta(
-    propina: Double,
-    total: Double,
-    porPersona: Double,
-    sobrante: Double
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Propina total", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(String.format("$%.2f", propina))
-        }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Total con propina", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(String.format("$%.2f", total), style = MaterialTheme.typography.titleMedium)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text("Cada quien paga", style = MaterialTheme.typography.bodyLarge)
-        Text(
-            String.format("$%.2f", porPersona),
-            style = MaterialTheme.typography.displayMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-        if (sobrante > 0) {
-            Text("Sobrante por redondeo: ${String.format("$%.2f", sobrante)}", style = MaterialTheme.typography.bodySmall)
-        }
-    }
+fun ConfirmarBorradoDialog(cantidad: Int, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("¿Borrar tareas?") },
+        text = { Text("Se eliminarán $cantidad tareas completadas. Esta acción no se puede deshacer.") },
+        confirmButton = { TextButton(onClick = onConfirm) { Text("Borrar") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+    )
 }

@@ -1,101 +1,101 @@
 package com.example.textfield.Screen
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Divider
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.textfield.Components.ResultadoCuenta
-import com.example.textfield.Components.StepperPersonas
-import kotlin.math.ceil
+import com.example.textfield.Components.ConfirmarBorradoDialog
+import com.example.textfield.Components.TareaItem
 
+
+enum class Prioridad { ALTA, MEDIA, BAJA }
+enum class Filtro { TODAS, PENDIENTES, HECHAS }
+data class Tarea(val id: Int, val titulo: String, val prioridad: Prioridad, val hecha: Boolean = false)
 
 @Composable
-fun CuentaScreen() {
+fun TareasScreen() {
+    val tareas = remember { mutableStateListOf<Tarea>() }
+    var textoNueva by remember { mutableStateOf("") }
+    var prioridadNueva by remember { mutableStateOf(Prioridad.MEDIA) }
+    var filtro by remember { mutableStateOf(Filtro.TODAS) }
+    var mostrarDialogo by remember { mutableStateOf(false) }
 
-    var montoTexto by remember { mutableStateOf("") }
-    var propinaPct by remember { mutableStateOf(10) }
-    var personas by remember { mutableStateOf(1) }
-    var redondear by remember { mutableStateOf(false) }
-    val monto = montoTexto.toDoubleOrNull() ?: 0.0
-    val propina = monto * (propinaPct / 100.0)
-    val total = monto + propina
-    val pagoExacto = if (personas > 0) total / personas else 0.0
-    val porPersona = if (redondear) ceil(pagoExacto) else pagoExacto
-    val sobrante = if (redondear) (porPersona * personas) - total else 0.0
+    val tareasVisibles = tareas.filter {
+        when (filtro) {
+            Filtro.TODAS -> true
+            Filtro.PENDIENTES -> !it.hecha
+            Filtro.HECHAS -> it.hecha
+        }
+    }
+    val pendientes = tareas.count { !it.hecha }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text("Cuenta dividida", style = MaterialTheme.typography.headlineMedium)
-
-        TextField(
-            value = montoTexto,
-            onValueChange = { montoTexto = it },
-            label = { Text("Monto de la cuenta") },
-            modifier = Modifier.fillMaxWidth()
+    if (mostrarDialogo) {
+        ConfirmarBorradoDialog(
+            cantidad = tareas.count { it.hecha },
+            onConfirm = {
+                tareas.removeAll { it.hecha }
+                mostrarDialogo = false
+            },
+            onDismiss = { mostrarDialogo = false }
         )
+    }
 
-        Text("Propina")
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf(10, 15, 20).forEach { pct ->
-                FilterChip(
-                    selected = propinaPct == pct,
-                    onClick = { propinaPct = pct },
-                    label = { Text("$pct %") }
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Mis pendientes", style = MaterialTheme.typography.headlineMedium)
+
+        Row(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = textoNueva,
+                onValueChange = { textoNueva = it },
+                label = { Text("Nueva tarea") },
+                modifier = Modifier.weight(1f)
+            )
+            Button(
+                onClick = {
+                    tareas.add(Tarea(tareas.size, textoNueva, prioridadNueva))
+                    textoNueva = ""
+                },
+                enabled = textoNueva.isNotBlank(),
+                modifier = Modifier.padding(start = 8.dp)
+            ) { Text("+") }
+        }
+        Row {
+            Filtro.values().forEach { f ->
+                FilterChip(selected = filtro == f, onClick = { filtro = f }, label = { Text(f.name) })
+            }
+        }
+
+        LazyColumn(modifier = Modifier.weight(1f)) {
+            items(tareasVisibles, key = { it.id }) { tarea ->
+                TareaItem(
+                    tarea = tarea,
+                    onCheckedChange = { valor ->
+                        val index = tareas.indexOfFirst { it.id == tarea.id }
+                        if (index != -1) tareas[index] = tareas[index].copy(hecha = valor)
+                    },
+                    onDelete = { tareas.remove(tarea) }
                 )
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Personas")
-            StepperPersonas(
-                personas = personas,
-                onChange = { personas = it }
-            )
+        Text("$pendientes pendientes de ${tareas.size}", modifier = Modifier.padding(vertical = 8.dp))
+        Button(onClick = { mostrarDialogo = true }, modifier = Modifier.fillMaxWidth()) {
+            Text("Borrar completadas")
         }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Redondear hacia arriba")
-            Switch(checked = redondear, onCheckedChange = { redondear = it })
-        }
-
-        Divider()
-
-        ResultadoCuenta(
-            propina = propina,
-            total = total,
-            porPersona = porPersona,
-            sobrante = sobrante
-        )
     }
 }
