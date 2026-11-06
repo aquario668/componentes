@@ -18,10 +18,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             TextfieldTheme {
                 InicioScreen(
-                    textoIngresado = "Elemento de prueba",
-                    elementos = listOf("MANZANA", "PAN", "ARROZ"),
-                    onTextoChange = {},
-                    onAgregar = {}
                 )
 
             }
@@ -33,9 +29,5 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ScreenPreview() {
     InicioScreen(
-        textoIngresado = "Elemento de prueba",
-        elementos = listOf("MANZANA", "PAN", "ARROZ"),
-        onTextoChange = {},
-        onAgregar = {}
     )
 }

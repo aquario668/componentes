@@ -1,57 +1,118 @@
 package com.example.textfield.Screen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
-fun InicioScreen(
-    modifier: Modifier = Modifier,
-    textoIngresado: String,
-    elementos: List<String>,
-    onTextoChange: (String) -> Unit,
-    onAgregar: () -> Unit
-) {
+fun InicioScreen(modifier: Modifier = Modifier) {
+    var nombre by rememberSaveable { mutableStateOf("") }
+    val listaNombres = remember { mutableStateListOf<String>() }
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(15.dp)
+    ) {
+        TextField(
+            value = nombre,
+            onValueChange = { nombre = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Escribe un nombre") }
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Button(
+            onClick = {
+                if (nombre.isNotBlank()) {
+                    listaNombres.add(nombre)
+                    nombre = ""
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Agregar")
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            itemsIndexed(listaNombres) { index, itemNombre ->
+                Micard(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    nombre = itemNombre,
+                    onEliminar = {
+                        listaNombres.removeAt(index)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun Micard(modifier: Modifier = Modifier, nombre: String, onEliminar: () -> Unit) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(70.dp)
+            .border(
+                width = 2.dp,
+                color = Color.Blue,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .background(Color.White)
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.CenterStart
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            TextField(
-                value = textoIngresado,
-                onValueChange = onTextoChange,
-                label = { Text("Nuevo elemento") },
-                modifier = Modifier.weight(1f)
+            Text(text = nombre, fontSize = 18.sp, color = Color.Black)
+
+            Text(
+                text = "X",
+                modifier = Modifier
+                    .clickable { onEliminar() }
+                    .padding(8.dp),
+                fontSize = 18.sp,
+                color = Color.Red
             )
-
-            Button(onClick = onAgregar) {
-                Text("Agregar")
-            }
-        }
-
-        Text(text = "Lista de elementos:")
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(elementos) { elemento ->
-                Text(text = "• $elemento")
-            }
         }
     }
 }
