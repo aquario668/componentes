@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.textfield.Screen.QuizApp
+import com.example.textfield.Screen.InicioScreen
 import com.example.textfield.ui.theme.TextfieldTheme
 
 class MainActivity : ComponentActivity() {
@@ -15,15 +15,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TextfieldTheme {
-                QuizApp()
+                InicioScreen()
 
             }
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
-fun lecturapreviw(){
-    QuizApp()
+fun ScreenPreview() {
+    InicioScreen()
 }

@@ -1,82 +1,50 @@
 package com.example.textfield.Screen
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import com.example.textfield.Components.InicioScreen
-import com.example.textfield.Components.PreguntaScreen
-import com.example.textfield.Components.ResultadoScreen
+import androidx.compose.ui.text.input.KeyboardType
 
-
-enum class Pantalla { INICIO, QUIZ, RESULTADO }
-data class Pregunta(val texto: String, val opciones: List<String>, val correcta: Int)
 
 @Composable
-fun QuizApp() {
-    var pantalla by remember { mutableStateOf(Pantalla.INICIO) }
-    var nombre by remember { mutableStateOf("") }
-    var indicePregunta by remember { mutableStateOf(0) }
-    var seleccionada by remember { mutableStateOf<Int?>(null) }
-    var respondida by remember { mutableStateOf(false) }
-    var puntaje by remember { mutableStateOf(0) }
+fun InicioScreen(modifier: Modifier = Modifier) {
+    var num1 by rememberSaveable { mutableStateOf("") }
+    var num2 by rememberSaveable { mutableStateOf("") }
+    var resultado by rememberSaveable { mutableStateOf("") }
 
-    val preguntas = listOf(
-        Pregunta("¿Qué tipo de dato usar para 3.14?", listOf("Int", "Double", "String", "Boolean"), 1),
-        // ... (resto de preguntas omitidas por brevedad)
-    )
-    Column(modifier = Modifier.fillMaxSize().background(Color.White), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
-    when (pantalla) {
-        Pantalla.INICIO -> {
-            InicioScreen(
-                nombre = nombre,
-                onNombreChange = { nombre = it },
-                onComenzar = { pantalla = Pantalla.QUIZ }
-            )
+    Column(modifier = modifier) {
+        TextField(
+            value = num1,
+            onValueChange = { num1 = it },
+            label = { Text("Número 1") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+
+        TextField(
+            value = num2,
+            onValueChange = { num2 = it },
+            label = { Text("Número 2") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+
+        Button(onClick = {
+            val n1 = num1.toDoubleOrNull() ?: 0.0
+            val n2 = num2.toDoubleOrNull() ?: 0.0
+            val suma = n1 + n2
+            resultado = if (suma % 1.0 == 0.0) suma.toLong().toString() else suma.toString()
+        }) {
+            Text("Sumar")
         }
-        Pantalla.QUIZ -> {
-            PreguntaScreen(
-                pregunta = preguntas[indicePregunta],
-                numero = indicePregunta + 1,
-                total = preguntas.size,
-                seleccionada = seleccionada,
-                respondida = respondida,
-                onSeleccionar = { seleccionada = it },
-                onConfirmar = {
-                    respondida = true
-                    if (seleccionada == preguntas[indicePregunta].correcta) puntaje++
-                },
-                onSiguiente = {
-                    if (indicePregunta < preguntas.size - 1) {
-                        indicePregunta++
-                        seleccionada = null
-                        respondida = false
-                    } else {
-                        pantalla = Pantalla.RESULTADO
-                    }
-                }
-            )
-        }
-        Pantalla.RESULTADO -> {
-            ResultadoScreen(
-                nombre = nombre, puntaje = puntaje, total = preguntas.size,
-                onReintentar = {
-                    indicePregunta = 0; puntaje = 0; seleccionada = null; respondida = false
-                    pantalla = Pantalla.QUIZ
-                },
-                onCambiarJugador = {
-                    nombre = ""; indicePregunta = 0; puntaje = 0; seleccionada = null; respondida = false
-                    pantalla = Pantalla.INICIO
-                }
-            )
-        }
-    }}
+
+        Text(text = "Resultado: $resultado")
+    }
 }
+
