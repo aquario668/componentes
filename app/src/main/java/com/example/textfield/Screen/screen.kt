@@ -1,101 +1,73 @@
 package com.example.textfield.Screen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.textfield.Components.ConfirmarBorradoDialog
-import com.example.textfield.Components.TareaItem
+import androidx.compose.ui.unit.sp
+import com.example.textfield.Components.HomeScreen
+import com.example.textfield.Components.LoginForm
 
 
-enum class Prioridad { ALTA, MEDIA, BAJA }
-enum class Filtro { TODAS, PENDIENTES, HECHAS }
-data class Tarea(val id: Int, val titulo: String, val prioridad: Prioridad, val hecha: Boolean = false)
+enum class LoginEstado { INACTIVO, ERROR, BLOQUEADO, EXITO }
 
 @Composable
-fun TareasScreen() {
-    val tareas = remember { mutableStateListOf<Tarea>() }
-    var textoNueva by remember { mutableStateOf("") }
-    var prioridadNueva by remember { mutableStateOf(Prioridad.MEDIA) }
-    var filtro by remember { mutableStateOf(Filtro.TODAS) }
-    var mostrarDialogo by remember { mutableStateOf(false) }
+fun LoginScreen() {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var recordarme by remember { mutableStateOf(false) }
+    var intentosFallidos by remember { mutableStateOf(0) }
+    var estado by remember { mutableStateOf(LoginEstado.INACTIVO) }
+    Column(modifier = Modifier.fillMaxSize().background(Color.White), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Text("CLINICA VIDA", fontSize = 20.sp, color = Color.Green)
+        Spacer(modifier=Modifier.height(8.dp))
+        Text("Consulta tus citas medicas", color = Color.Green)
+        Spacer(modifier=Modifier.height(16.dp))
 
-    val tareasVisibles = tareas.filter {
-        when (filtro) {
-            Filtro.TODAS -> true
-            Filtro.PENDIENTES -> !it.hecha
-            Filtro.HECHAS -> it.hecha
-        }
-    }
-    val pendientes = tareas.count { !it.hecha }
-
-    if (mostrarDialogo) {
-        ConfirmarBorradoDialog(
-            cantidad = tareas.count { it.hecha },
-            onConfirm = {
-                tareas.removeAll { it.hecha }
-                mostrarDialogo = false
-            },
-            onDismiss = { mostrarDialogo = false }
-        )
-    }
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Mis pendientes", style = MaterialTheme.typography.headlineMedium)
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = textoNueva,
-                onValueChange = { textoNueva = it },
-                label = { Text("Nueva tarea") },
-                modifier = Modifier.weight(1f)
-            )
-            Button(
-                onClick = {
-                    tareas.add(Tarea(tareas.size, textoNueva, prioridadNueva))
-                    textoNueva = ""
-                },
-                enabled = textoNueva.isNotBlank(),
-                modifier = Modifier.padding(start = 8.dp)
-            ) { Text("+") }
-        }
-        Row {
-            Filtro.values().forEach { f ->
-                FilterChip(selected = filtro == f, onClick = { filtro = f }, label = { Text(f.name) })
-            }
-        }
-
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(tareasVisibles, key = { it.id }) { tarea ->
-                TareaItem(
-                    tarea = tarea,
-                    onCheckedChange = { valor ->
-                        val index = tareas.indexOfFirst { it.id == tarea.id }
-                        if (index != -1) tareas[index] = tareas[index].copy(hecha = valor)
-                    },
-                    onDelete = { tareas.remove(tarea) }
+        when (estado) {
+            LoginEstado.EXITO -> {
+                HomeScreen(
+                    email = email,
+                    onLogout = {
+                        email = ""; password = ""; recordarme = false
+                        intentosFallidos = 0; estado = LoginEstado.INACTIVO
+                    }
                 )
             }
-        }
 
-        Text("$pendientes pendientes de ${tareas.size}", modifier = Modifier.padding(vertical = 8.dp))
-        Button(onClick = { mostrarDialogo = true }, modifier = Modifier.fillMaxWidth()) {
-            Text("Borrar completadas")
+            else -> {
+                LoginForm(
+                    email = email,
+                    onEmailChange = { email = it; estado = LoginEstado.INACTIVO },
+                    password = password,
+                    onPasswordChange = { password = it; estado = LoginEstado.INACTIVO },
+                    recordarme = recordarme,
+                    onRecordarmeChange = { recordarme = it },
+                    mensajeError = if (estado == LoginEstado.ERROR) "Correo o contraseña incorrectos (intento $intentosFallidos de 3)" else null,
+                    bloqueado = estado == LoginEstado.BLOQUEADO,
+                    onLogin = {
+                        if (email == "paciente@vida.mx" && password == "Vida2025") {
+                            estado = LoginEstado.EXITO
+                        } else {
+                            intentosFallidos++
+                            estado =
+                                if (intentosFallidos >= 3) LoginEstado.BLOQUEADO else LoginEstado.ERROR
+                        }
+                    }
+                )
+            }
         }
     }
 }
