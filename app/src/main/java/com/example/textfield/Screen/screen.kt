@@ -1,6 +1,8 @@
 package com.example.textfield.Screen
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -8,43 +10,48 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 
 
 @Composable
 fun InicioScreen(modifier: Modifier = Modifier) {
-    var num1 by rememberSaveable { mutableStateOf("") }
-    var num2 by rememberSaveable { mutableStateOf("") }
-    var resultado by rememberSaveable { mutableStateOf("") }
+    var numeroTexto by remember { mutableStateOf("") }
+    val ytext = "B"
 
-    Column(modifier = modifier) {
-        TextField(
-            value = num1,
-            onValueChange = { num1 = it },
-            label = { Text("Número 1") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+    Column(modifier = modifier.padding(16.dp).fillMaxSize()) {
+        Palabra(
+            repetir = numeroTexto,
+            onRepetirChange = { nuevoTexto ->
+                numeroTexto = nuevoTexto
+            },
+            textoMostrar = ytext
         )
-
-        TextField(
-            value = num2,
-            onValueChange = { num2 = it },
-            label = { Text("Número 2") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-
-        Button(onClick = {
-            val n1 = num1.toDoubleOrNull() ?: 0.0
-            val n2 = num2.toDoubleOrNull() ?: 0.0
-            val suma = n1 + n2
-            resultado = if (suma % 1.0 == 0.0) suma.toLong().toString() else suma.toString()
-        }) {
-            Text("Sumar")
-        }
-
-        Text(text = "Resultado: $resultado")
     }
 }
 
+@Composable
+fun Palabra(
+    repetir: String,
+    onRepetirChange: (String) -> Unit,
+    textoMostrar: String,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        TextField(
+            value = repetir,
+            onValueChange = onRepetirChange,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+
+
+
+            val cantidad = repetir.toIntOrNull() ?: 0
+            repeat(cantidad) {
+                Text(text = textoMostrar)
+            }
+        }
+    }
