@@ -1,65 +1,77 @@
 package com.example.textfield.Components
-
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.Button
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import com.example.textfield.Screen.Categoria
-import com.example.textfield.Screen.Gasto
-
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
 @Composable
-fun ResumenPresupuesto(totalGastado: Double, saldo: Double, porcentaje: Double) {
-    Column {
+fun PresupuestoHoist(
+    ingresoTexto: String,
+    onIngresoChange: (String) -> Unit,
+    ingreso: Double,
+    totalGastado: Double,
+    saldo: Double,
+    porcentaje: Double,
+    categoriaTop: String,
+    gastos: List<Gasto>,
+    onAgregarGasto: (String, Double, Categoria) -> Unit,
+    onEliminarGasto: (Gasto) -> Unit
+) {
+    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        TextField(value = ingresoTexto, onValueChange = onIngresoChange, label = { Text("Ingreso mensual") })
         Text("Gastado: $totalGastado | Saldo: $saldo")
+        Text("Mayor gasto: $categoriaTop")
+
         if (porcentaje >= 1.0) {
-            Text("Excediste el presupuesto", color = MaterialTheme.colorScheme.error)
+            Text("Excedido por: ${totalGastado - ingreso}")
         } else if (porcentaje >= 0.8) {
-            Text("Cuidado: pasaste el 80%")
+            Text("Cuidado: pasaste el 80 %")
+        }
+
+        FormularioGasto(onAgregar = onAgregarGasto)
+
+        gastos.forEach { gasto ->
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("${gasto.concepto} - $${gasto.monto} (${gasto.categoria.name})")
+                IconButton(onClick = { onEliminarGasto(gasto) }) { Text("x") }
+            }
         }
     }
 }
 
 @Composable
 fun FormularioGasto(onAgregar: (String, Double, Categoria) -> Unit) {
-    // Estado local, no ensucia la pantalla principal
     var concepto by remember { mutableStateOf("") }
     var montoTexto by remember { mutableStateOf("") }
     var categoria by remember { mutableStateOf(Categoria.COMIDA) }
+    var menuAbierto by remember { mutableStateOf(false) }
 
     val monto = montoTexto.toDoubleOrNull()
     val valido = concepto.isNotBlank() && monto != null && monto > 0
 
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         TextField(value = concepto, onValueChange = { concepto = it }, label = { Text("Concepto") })
         TextField(value = montoTexto, onValueChange = { montoTexto = it }, label = { Text("Monto") })
+
+        Box {
+            Button(onClick = { menuAbierto = true }) { Text(categoria.name) }
+            DropdownMenu(expanded = menuAbierto, onDismissRequest = { menuAbierto = false }) {
+                Categoria.entries.forEach { cat ->
+                    DropdownMenuItem(text = { Text(cat.name) }, onClick = { categoria = cat; menuAbierto = false })
+                }
+            }
+        }
+
         Button(
             onClick = {
                 onAgregar(concepto, monto!!, categoria)
-                concepto = ""; montoTexto = ""
+                concepto = ""
+                montoTexto = ""
             },
             enabled = valido
-        ) { Text("Agregar gasto") }
-    }
-}
-
-@Composable
-fun ListaGastos(gastos: List<Gasto>, onEliminar: (Gasto) -> Unit) {
-    Column {
-        gastos.forEach { gasto ->
-            Row {
-                Text("${gasto.concepto} - $${gasto.monto}")
-                IconButton(onClick = { onEliminar(gasto) }) { Text("x") }
-            }
+        ) {
+            Text("Agregar gasto")
         }
     }
 }
