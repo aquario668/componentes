@@ -1,81 +1,96 @@
 package com.example.textfield.Components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.focus.focusModifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 
-
 @Composable
-fun StepperPersonas(personas: Int, onChange: (Int) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = { if (personas > 1) onChange(personas - 1) }) {
-            Text("-", style = MaterialTheme.typography.titleLarge)
-        }
-        Text("$personas", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
-        IconButton(onClick = { if (personas < 20) onChange(personas + 1) }) {
-            Text("+", style = MaterialTheme.typography.titleLarge)
-        }
-    }
-}
-
-@Composable
-fun ResultadoCuenta(
+fun CuentaHoist(
+    montoTexto: String,
+    onMontoChange: (String) -> Unit,
+    propinaPct: Int,
+    onPropinaChange: (Int) -> Unit,
+    usaOtro: Boolean,
+    onUsaOtroChange: (Boolean) -> Unit,
+    personas: Int,
+    onPersonasChange: (Int) -> Unit,
+    redondear: Boolean,
+    onRedondearChange: (Boolean) -> Unit,
     propina: Double,
     total: Double,
     porPersona: Double,
     sobrante: Double
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Propina total", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(String.format("$%.2f", propina))
-        }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Total con propina", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(String.format("$%.2f", total), style = MaterialTheme.typography.titleMedium)
-        }
+    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("Cuenta dividida")
+        TextField(value = montoTexto, onValueChange = onMontoChange, label = { Text("Monto") })
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text("Cada quien paga", style = MaterialTheme.typography.bodyLarge)
-        Text(
-            String.format("$%.2f", porPersona),
-            style = MaterialTheme.typography.displayMedium,
-            color = MaterialTheme.colorScheme.primary
+        SelectorPropina(
+            porcentaje = propinaPct,
+            usaOtro = usaOtro,
+            onPorcentajeChange = onPropinaChange,
+            onOtroChange = onUsaOtroChange
         )
-        if (sobrante > 0) {
-            Text("Sobrante por redondeo: ${String.format("$%.2f", sobrante)}", style = MaterialTheme.typography.bodySmall)
+
+        StepperPersonas(personas = personas, onChange = onPersonasChange)
+
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Text("Redondear hacia arriba")
+            Switch(checked = redondear, onCheckedChange = onRedondearChange)
         }
+
+        Divider()
+        ResultadoCuenta(propina = propina, total = total, porPersona = porPersona, sobrante = sobrante, redondear = redondear)
+    }
+}
+
+@Composable
+fun SelectorPropina(
+    porcentaje: Int,
+    usaOtro: Boolean,
+    onPorcentajeChange: (Int) -> Unit,
+    onOtroChange: (Boolean) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(10, 15, 20).forEach { pct ->
+                FilterChip(
+                    selected = !usaOtro && porcentaje == pct,
+                    onClick = { onOtroChange(false); onPorcentajeChange(pct) },
+                    label = { Text("$pct %") }
+                )
+            }
+            FilterChip(selected = usaOtro, onClick = { onOtroChange(true) }, label = { Text("Otro") })
+        }
+
+        if (usaOtro) {
+            Slider(value = porcentaje.toFloat(), onValueChange = { onPorcentajeChange(it.toInt()) }, valueRange = 0f..30f)
+            Text("Propina: $porcentaje %")
+        }
+    }
+}
+
+@Composable
+fun StepperPersonas(personas: Int, onChange: (Int) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+        Text("Personas")
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = { if (personas > 1) onChange(personas - 1) }) { Text("-") }
+            Text("$personas")
+            IconButton(onClick = { if (personas < 20) onChange(personas + 1) }) { Text("+") }
+        }
+    }
+}
+
+@Composable
+fun ResultadoCuenta(propina: Double, total: Double, porPersona: Double, sobrante: Double, redondear: Boolean) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Propina: ${String.format("$%.2f", propina)}")
+        Text("Total: ${String.format("$%.2f", total)}")
+        Text("Por persona: ${String.format("$%.2f", porPersona)}")
+        if (redondear) Text("Sobrante: ${String.format("$%.2f", sobrante)}")
     }
 }

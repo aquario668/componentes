@@ -24,6 +24,6 @@ class MainActivity : ComponentActivity() {
 
 @Preview
 @Composable
-fun lecturapreviw(){
+fun Lecturapreview(){
     CuentaScreen()
 }
