@@ -1,25 +1,62 @@
 package com.example.textfield.Components
-
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
+@Composable
+fun ResenaHoist(
+    publicada: Boolean,
+    comida: Int,
+    onComidaChange: (Int) -> Unit,
+    servicio: Int,
+    onServicioChange: (Int) -> Unit,
+    ambiente: Int,
+    onAmbienteChange: (Int) -> Unit,
+    todasCalificadas: Boolean,
+    general: Double,
+    comentario: String,
+    onComentarioChange: (String) -> Unit,
+    etiquetas: Set<String>,
+    onToggleEtiqueta: (String) -> Unit,
+    puedePublicar: Boolean,
+    onPublicar: () -> Unit
+) {
+    if (publicada) {
+        ResumenResena(general = general, comentario = comentario, etiquetas = etiquetas)
+    } else {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            RatingBar("Comida", comida, onComidaChange)
+            RatingBar("Servicio", servicio, onServicioChange)
+            RatingBar("Ambiente", ambiente, onAmbienteChange)
+
+            if (todasCalificadas) {
+                Text("Calificación general: ${String.format("%.1f", general)}")
+            }
+
+            TextField(value = comentario, onValueChange = onComentarioChange, label = { Text("Comentario") })
+            Text("${comentario.length}/200")
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("Familiar", "Romántico", "Económico", "Vegetariano", "Rápido").forEach { e ->
+                    FilterChip(selected = e in etiquetas, onClick = { onToggleEtiqueta(e) }, label = { Text(e) })
+                }
+            }
+
+            Button(onClick = onPublicar, enabled = puedePublicar) { Text("Publicar") }
+        }
+    }
+}
 
 @Composable
 fun RatingBar(titulo: String, rating: Int, onRatingChange: (Int) -> Unit) {
     Column {
         Text(titulo)
         Row {
-            (1..5).forEach { estrella ->
-                IconButton(onClick = {
-                    onRatingChange(if (rating == estrella) 0 else estrella)
-                }) {
-                    Text(if (estrella <= rating) "★" else "☆", color = if (estrella <= rating) Color.Yellow else Color.Gray)
+            (1..5).forEach { n ->
+                IconButton(onClick = { onRatingChange(n) }) {
+                    Text(if (n <= rating) "★" else "☆")
                 }
             }
         }
@@ -27,23 +64,9 @@ fun RatingBar(titulo: String, rating: Int, onRatingChange: (Int) -> Unit) {
 }
 
 @Composable
-fun ComentarioField(texto: String, onChange: (String) -> Unit, maximo: Int = 200) {
-    Column {
-        TextField(
-            value = texto,
-            onValueChange = { if (it.length <= maximo) onChange(it) }
-        )
-        Text(
-            "${texto.length}/$maximo",
-            color = if (texto.length >= 180) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-@Composable
 fun ResumenResena(general: Double, comentario: String, etiquetas: Set<String>) {
-    Column {
-        Text("Reseña publicada con éxito")
+    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Reseña publicada")
         Text("Promedio: ${String.format("%.1f", general)}")
         Text("Comentario: $comentario")
         Text("Etiquetas: ${etiquetas.joinToString()}")
