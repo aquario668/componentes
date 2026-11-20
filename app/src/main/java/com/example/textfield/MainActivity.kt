@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.textfield.Screen.carrito
+import com.example.textfield.Screen.CarritoScreen
 import com.example.textfield.ui.theme.TextfieldTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TextfieldTheme {
-                carrito()
+                CarritoScreen()
 
             }
         }
@@ -26,6 +26,6 @@ class MainActivity : ComponentActivity() {
 
 @Preview
 @Composable
-fun lecturapreviw(){
-    carrito()
+fun Lecturapreview(){
+    CarritoScreen()
 }

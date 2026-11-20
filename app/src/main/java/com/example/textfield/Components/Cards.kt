@@ -1,100 +1,73 @@
 package com.example.textfield.Components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 
+@Composable
+fun CarritoHoist(
+    catalogo: List<Producto>,
+    cantidades: List<Int>,
+    totalArticulos: Int,
+    subtotal: Double,
+    descuento: Double,
+    envio: Double,
+    total: Double,
+    onCantidadChange: (Int, Int) -> Unit,
+    onVaciar: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text("Tienda Don Pepe")
 
+        catalogo.forEachIndexed { i, prod ->
+            ProductoItem(
+                producto = prod,
+                cantidad = cantidades[i],
+                onCantidadChange = { onCantidadChange(i, it) }
+            )
+        }
 
-data class  Producto ( val nombre: String , val precio: Double)
+        Divider()
+        ResumenCarrito(totalArticulos, subtotal, descuento, envio, total)
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(onClick = onVaciar) { Text("Vaciar") }
+            Button(onClick = {}, enabled = totalArticulos > 0) { Text("Confirmar pedido") }
+        }
+    }
+}
 
 @Composable
-fun productoItem(
-  producto: Producto,
-  cantidad: Int,
-  onCantidadChange:(Int)-> Unit
-){
-    Row(modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween) {
-        Column{
+fun ProductoItem(producto: Producto, cantidad: Int, onCantidadChange: (Int) -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Column {
             Text(producto.nombre)
             Text("$${producto.precio} c/u")
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = {if (cantidad>0) onCantidadChange(cantidad-1)}) {
-                Text("-")
-            }
-            Text("$cantidad", modifier = Modifier.padding(horizontal = 8.dp))
-            IconButton(onClick = {if (cantidad <10) onCantidadChange(cantidad+1) }
-            ) {  Text("+")}
+            IconButton(onClick = { onCantidadChange(cantidad - 1) }) { Text("-") }
+            Text("$cantidad")
+            IconButton(onClick = { onCantidadChange(cantidad + 1) }) { Text("+") }
         }
     }
 }
 
-
 @Composable
-fun ResumenCarrito(
-    articulos: Int,
-    subtotal: Double,
-    descuento: Double,
-    envio: Double,
-    total: Double
-){
-Column(verticalArrangement = Arrangement.spacedBy(8.dp) , modifier = Modifier.background(Color.Gray)) {
-
-    ResumenFila("Articulos", "$articulos")
-    ResumenFila("Subtotal", String.format("$%.2f", subtotal))
-    if(descuento >0){
-        ResumenFila("Descuento 10%", String.format("-$%.2f", descuento))
-    }
-    val textoEnvio = if (envio == 0.0 && articulos>0 )"Gratis" else String.format("$%.2f",envio)
-    ResumenFila("Envío", textoEnvio, color = if (envio == 0.0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
-    Divider(modifier=Modifier.padding(vertical = 8.dp))
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text("Total")
-        Text(String.format("$%.2f",total))
+fun ResumenCarrito(articulos: Int, subtotal: Double, descuento: Double, envio: Double, total: Double) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Artículos: $articulos")
+        Text("Subtotal: ${String.format("$%.2f", subtotal)}")
+        if (descuento > 0) Text("Descuento 10%: ${String.format("-$%.2f", descuento)}")
+        val textoEnvio = if (envio == 0.0 && articulos > 0) "GRATIS" else String.format("$%.2f", envio)
+        Text("Envío: $textoEnvio")
+        Text("TOTAL: ${String.format("$%.2f", total)}")
     }
 }
-}
-
-
-@Composable
-fun ResumenFila(etiqueta: String , valor : String , color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface){
-Row(modifier = Modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.SpaceBetween) {
-    Text(etiqueta, color = color)
-    Text(valor, color = color)
-}
-
-}
-
