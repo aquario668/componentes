@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.textfield.Screen.lectura
+import com.example.textfield.Screen.InscripcionScreen
 import com.example.textfield.ui.theme.TextfieldTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TextfieldTheme {
-                lectura(Modifier.fillMaxSize())
+                InscripcionScreen()
 
             }
         }
@@ -29,8 +29,8 @@ class MainActivity : ComponentActivity() {
 
 @Preview
 @Composable
-fun lecturapreviw(){
-    lectura(Modifier.fillMaxSize())
+fun Lecturapreview(){
+    InscripcionScreen()
 
 
 }
