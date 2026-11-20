@@ -1,27 +1,25 @@
 package com.example.textfield.Screen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.textfield.Components.QuizHoist
-import com.example.textfield.Components.QuizViewModel
+import com.example.textfield.Components.CarreraHoist
+import com.example.textfield.Components.CarreraViewModel
 
 @Composable
-fun QuizScreen(vm: QuizViewModel = viewModel()) {
-    QuizHoist(
-        pantalla = vm.pantalla,
-        nombre = vm.nombre,
-        onNombreChange = { vm.nombre = it },
-        onComenzar = { vm.comenzar() },
-        pregunta = vm.preguntas[vm.indicePregunta],
-        numero = vm.indicePregunta + 1,
-        total = vm.preguntas.size,
-        seleccionada = vm.seleccionada,
-        respondida = vm.respondida,
-        onSeleccionar = { vm.seleccionada = it },
-        onConfirmar = { vm.confirmar() },
-        onSiguiente = { vm.siguiente() },
-        puntaje = vm.puntaje,
-        onReintentar = { vm.reintentar() },
-        onCambiarJugador = { vm.cambiarJugador() }
-    )
+fun CarreraScreen(vm: CarreraViewModel = viewModel() ) {
+    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+        CarreraHoist(
+            nombres = vm.nombres,
+            avances = vm.avances,
+            meta = vm.meta,
+            corriendo = vm.corriendo,
+            ganador = vm.ganador,
+            onIniciar = { vm.iniciarCarrera() }
+        )
+    }
 }

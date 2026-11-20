@@ -1,72 +1,51 @@
 package com.example.textfield.Components
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 
-enum class Pantalla { INICIO, QUIZ, RESULTADO }
-data class Pregunta(val texto: String, val opciones: List<String>, val correcta: Int)
+class CarreraViewModel : ViewModel() {
+    val meta = 100
+    val nombres = listOf("Rojo", "Azul", "Verde")
+    val avances = mutableStateListOf(0, 0, 0)
 
-class QuizViewModel : ViewModel() {
-    val preguntas = listOf(
-        Pregunta("¿Qué tipo de dato guarda 3.14?", listOf("Int", "Double", "String", "Boolean"), 1),
-        Pregunta("¿Qué palabra clave crea una variable mutable en Kotlin?", listOf("val", "var", "const", "let"), 1),
-        Pregunta("¿Qué estructura evalúa múltiples casos?", listOf("for", "when", "while", "try"), 1),
-        Pregunta("¿Qué significa null safety en Kotlin?", listOf("No hay variables", "Control de nulos", "Sin bucles", "Solo enteros"), 1),
-        Pregunta("¿Qué función convierte texto a entero seguro?", listOf("toInt()", "toIntOrNull()", "parseInt()", "asInt()"), 1)
-    )
+    var corriendo by mutableStateOf(false)
+    var ganador by mutableStateOf<String?>(null)
 
-    var pantalla by mutableStateOf(Pantalla.INICIO)
-    var nombre by mutableStateOf("")
-    var indicePregunta by mutableStateOf(0)
-    var seleccionada by mutableStateOf<Int?>(null)
-    var respondida by mutableStateOf(false)
-    var puntaje by mutableStateOf(0)
+    private var jobCarrera: Job? = null
 
-    fun comenzar() {
-        if (nombre.length >= 2) {
-            indicePregunta = 0
-            puntaje = 0
-            seleccionada = null
-            respondida = false
-            pantalla = Pantalla.QUIZ
-        }
-    }
+    fun iniciarCarrera() {
+        if (corriendo) return
+        jobCarrera?.cancel()
+        avances.fill(0)
+        ganador = null
+        corriendo = true
 
-    fun confirmar() {
-        if (seleccionada != null && !respondida) {
-            respondida = true
-            if (seleccionada == preguntas[indicePregunta].correcta) {
-                puntaje++
+        jobCarrera = viewModelScope.launch {
+            val jobs = nombres.indices.map { i ->
+                launch {
+                    while (avances[i] < meta && ganador == null) {
+                        delay(Random.nextLong(100, 300))
+                        if (ganador == null) {
+                            val paso = Random.nextInt(5, 20)
+                            val nuevo = (avances[i] + paso).coerceAtMost(meta)
+                            avances[i] = nuevo
+                            if (nuevo >= meta && ganador == null) {
+                                ganador = nombres[i]
+                            }
+                        }
+                    }
+                }
             }
+            jobs.forEach { it.join() }
+            corriendo = false
         }
-    }
-
-    fun siguiente() {
-        if (indicePregunta < preguntas.size - 1) {
-            indicePregunta++
-            seleccionada = null
-            respondida = false
-        } else {
-            pantalla = Pantalla.RESULTADO
-        }
-    }
-
-    fun reintentar() {
-        indicePregunta = 0
-        puntaje = 0
-        seleccionada = null
-        respondida = false
-        pantalla = Pantalla.QUIZ
-    }
-
-    fun cambiarJugador() {
-        nombre = ""
-        indicePregunta = 0
-        puntaje = 0
-        seleccionada = null
-        respondida = false
-        pantalla = Pantalla.INICIO
     }
 }
