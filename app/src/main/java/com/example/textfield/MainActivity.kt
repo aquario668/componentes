@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.textfield.Screen.lectura
+import com.example.textfield.Screen.LecturaScreen
 import com.example.textfield.ui.theme.TextfieldTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,15 +17,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TextfieldTheme {
-                lectura(Modifier.fillMaxSize())
+                LecturaScreen()
 
             }
         }
     }
 }
-
 @Preview
 @Composable
-fun lecturapreviw(){
-    lectura(Modifier.fillMaxSize())
+fun Lecturapreview(){
+    LecturaScreen()
 }
